@@ -8,7 +8,7 @@ node('master')
 
              { 
 
-                  git 'https://github.com/mythribhat/GeneralSpringBootProgExce.git' 
+                  git 'https://github.com/mythribhat/parking_backend.git' 
 
               } 
 
