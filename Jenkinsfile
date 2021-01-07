@@ -1,10 +1,10 @@
-node('master') 
+ node('master') 
 
 { 
 
     
 
-   stage('Git checkout') 
+   stage('SCM Checkout') 
 
              { 
 
@@ -30,7 +30,7 @@ node('master')
 
    
 
-   stage("Quality Gate check") 
+   stage("QG Check") 
 
          { 
 
@@ -51,31 +51,36 @@ node('master')
                   } 
 
          } 
+}
 
-    
+stage('Deploy approval') 
+        {
+                          input "Deploy to prod?"
+        }
 
-      stage('Deploy') 
+node('master') 
+
+{ 
+      stage('SIT – Deployment ') 
 
         { 
 
-             sh '/opt/maven/bin/mvn clean deploy -DaltDeploymentRepository=internal.repo::default::http://admin:admin123@52.14.217.83:8081/nexus/content/repositories/snapshots/' 
+             sh '/opt/maven/bin/mvn clean deploy -DaltDeploymentRepository=internal.repo::default::http://admin:admin123@18.222.187.3:8081/nexus/content/repositories/snapshots/' 
 
          } 
-
- 
-
-   stage('Release') 
-
-        { 
-
-             sh 'export JENKINS_NODE_COOKIE=dontKillMe ;nohup java -Dspring.profiles.active=dev -jar $WORKSPACE/target/*.jar &' 
-
-         }
     
-      post {
-        always {
-            emailext body: 'A Test EMail', recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']], subject: 'Test'
-        }
-    }
+ stage('Send email') 
+    
+   {
+    def mailRecipients = "mythritest@yahoo.com"
+    def jobName = currentBuild.fullDisplayName
 
-} 
+    emailext body: '''${SCRIPT, template="groovy-html.template"}''',
+        mimeType: 'text/html',
+        subject: "[Jenkins] ${jobName}",
+        to: "${mailRecipients}",
+        replyTo: "${mailRecipients}",
+        recipientProviders: [[$class: 'CulpritsRecipientProvider']]
+    }
+}
+  
